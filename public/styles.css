@@ -428,3 +428,36 @@ img, svg { max-width:100%; display:block; }
   height: auto;
   background: var(--dark);
 }
+
+.reasoner-flow {
+  max-width: 480px;
+  margin: 24px 0 18px;
+}
+
+.reasoner-flow svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.reasoner-flow figcaption {
+  color: #52615c;
+  font-size: .82rem;
+  margin: 6px 0 12px;
+}
+
+.reasoner-flow button[hidden] { display: none; }
+.flow-connector { stroke: #537e47; stroke-width: 2; }
+.flow-step rect { fill: #f5f7ef; stroke: #b5c2ab; }
+.flow-step text { fill: #243a30; font-size: 17px; dominant-baseline: middle; }
+.flow-step .flow-number { text-anchor: middle; font-weight: 700; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .reasoner-flow.is-playing .flow-step rect {
+    animation: highlight-flow-step 2.5s var(--flow-delay) both;
+  }
+}
+
+@keyframes highlight-flow-step {
+  15%, 80% { fill: #dceac7; stroke: #537e47; }
+}
