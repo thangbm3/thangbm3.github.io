@@ -475,3 +475,10 @@ img, svg { max-width:100%; display:block; }
 @keyframes highlight-flow-step {
   15%, 80% { fill: #dceac7; stroke: #537e47; }
 }
+
+.rmpflow-explainer {
+  margin: clamp(32px, 5vw, 64px) auto 0;
+  scroll-margin-top: 20px;
+}
+
+.rmpflow-explainer h3 { margin-top: 0; }
