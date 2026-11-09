@@ -178,8 +178,22 @@ async function play(){
   moveTo($('#robot svg'));await sleep(700);$('#robot').classList.add('on');cap.textContent='Illustrative RB-Y1 action in MuJoCo.';await sleep(2600);
   pkt.style.opacity=0;show(3);await sleep(3500);
   running=false;prog.style.width='100%';$('#play').disabled=false;$('#play').textContent='Replay animation'}
-$('#play').onclick=play;
 show(0); $$('.q').forEach(q=>q.classList.add('on'));
+
+const frame = window.frameElement;
+const Observer = frame ? window.parent.IntersectionObserver : window.IntersectionObserver;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const autoplay = new Observer(([entry]) => {
+  if (entry.intersectionRatio < .45 || reducedMotion.matches) return;
+  autoplay.disconnect();
+  play();
+}, { threshold: .45 });
+
+$('#play').onclick = () => {
+  autoplay.disconnect();
+  play();
+};
+autoplay.observe(frame || stage);
 </script>
 </body>
 </html>
