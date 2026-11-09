@@ -9,12 +9,20 @@
           if (reducedMotion.matches) flow.classList.remove('is-playing');
         }
 
-        flowButton.addEventListener('click', () => {
+        function playFlow() {
+          autoplay.disconnect();
           flow.classList.remove('is-playing');
           void flow.offsetWidth;
           flow.classList.add('is-playing');
           flowButton.textContent = 'Replay animation';
-        });
+        }
+
+        const autoplay = new IntersectionObserver(([entry]) => {
+          if (entry.intersectionRatio >= .45 && !reducedMotion.matches) playFlow();
+        }, { threshold: .45 });
+
+        flowButton.addEventListener('click', playFlow);
+        autoplay.observe(flow.querySelector('svg'));
 
         reducedMotion.addEventListener('change', syncMotionPreference);
         syncMotionPreference();
