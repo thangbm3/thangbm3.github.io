@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reasoner Architecture | Minh Thang Bui</title><style>
+:root{
+  --bg:#f7f8fa; --panel:#ffffff; --text:#172033; --muted:#667085; --line:#98a2b3;
+  --mac:#7c3aed; --macfill:#f5f0ff; --linux:#059669; --linuxfill:#ecfdf5;
+  --bridge:#2563eb; --bridgefill:#eff6ff; --sim:#c2410c; --simfill:#fff7ed;
+  --border:#d0d5dd; --shadow:0 12px 30px rgba(16,24,40,.12);
+}
+@media (prefers-color-scheme:dark){
+ :root{--bg:#0e1118;--panel:#161b22;--text:#e6edf3;--muted:#9da7b3;--line:#6e7681;--border:#30363d;
+ --macfill:#201735;--linuxfill:#112a22;--bridgefill:#10223c;--simfill:#2e1d12;--shadow:0 12px 30px rgba(0,0,0,.35)}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:100vh}
+.main{min-width:0;padding:14px}
+.walkthrough-intro{max-width:76ch;margin:0 0 16px}.walkthrough-intro h1{margin:8px 0 0}.walkthrough-intro p{margin:5px 0}.walkthrough-intro a{color:inherit}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px;margin-bottom:10px}
+.toolbar button,.toolbar input{font:inherit}
+button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:9px;padding:8px 10px;cursor:pointer}
+button:hover{border-color:#98a2b3}
+button.active{outline:2px solid #7c3aed55;border-color:#7c3aed}
+.search{min-width:220px;flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text)}
+.viewer{position:relative;border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden;min-height:760px}
+svg{display:block;width:100%;height:760px;touch-action:none;user-select:none}
+.boundary{fill:none;stroke-width:2;stroke-dasharray:9 7}
+.node rect{stroke-width:2;rx:14;ry:14;transition:opacity .18s,filter .18s,stroke-width .18s}
+.node text{pointer-events:none}
+.node{cursor:pointer;transition:opacity .18s}
+.node.dim{opacity:.12}.edge.dim{opacity:.08}.boundary.dim{opacity:.08}
+.node.selected rect{stroke-width:4;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+.node.reach-up rect{stroke:#2563eb!important;stroke-width:3}
+.node.reach-down rect{stroke:#d97706!important;stroke-width:3}
+.edge{fill:none;stroke:var(--line);stroke-width:2;marker-end:url(#arrow);transition:opacity .18s,stroke .18s,stroke-width .18s}
+.edge.emphasis{stroke:#3b82f6;stroke-width:2.5}
+.edge.security{stroke:#059669;stroke-width:2.5}
+.edge.dashed{stroke-dasharray:7 6}
+.edge.active-path{stroke:#7c3aed;stroke-width:4;opacity:1}
+.edge-label{font-size:11px;fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:5px}
+.small{font-size:10px;fill:var(--muted)}
+.title{font-weight:700;font-size:14px;fill:var(--text)}
+.tag{font-size:9px;fill:var(--muted)}
+.side{border-left:1px solid var(--border);background:var(--panel);padding:16px;overflow:auto;max-height:100vh}
+.side h2{margin:0 0 4px;font-size:20px}
+.side .sub{color:var(--muted);margin-bottom:14px}
+.badge{display:inline-block;padding:3px 7px;border-radius:999px;border:1px solid var(--border);margin:2px 4px 2px 0;font-size:12px}
+.badge.ok{color:#047857;border-color:#10b98155;background:#10b98112}
+.section{margin:18px 0}
+.section h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 7px}
+ul{padding-left:18px;margin:6px 0}
+li{margin:4px 0}
+.reach{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.reach button{text-align:left}
+.legend{position:absolute;left:12px;bottom:12px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--muted);font-size:12px}
+.motion-dot{fill:#7c3aed;stroke:#fff;stroke-width:2;filter:drop-shadow(0 0 5px #7c3aed)}
+.footer-note{font-size:12px;color:var(--muted);margin-top:10px}
+@media(max-width:980px){.app{grid-template-columns:1fr}.side{border-left:0;border-top:1px solid var(--border);max-height:none}}
+</style></head> <body> <div class="app" id="archifyApp"> <main class="main"> <header class="walkthrough-intro"> <a href="../">← Back to Embodied AI</a> <h1>Reasoner Architecture</h1> <p>Architecture walkthrough · Mac mini M4 and Linux</p> <p>Explore how the Mac reasons about what to do and how Linux plans the robot motion. Isaac Sim and ROS 2 are shown as sources of simulated observations. The RB-Y1 video on the project page is a separate MuJoCo manipulation demo.</p> </header> <div class="toolbar"> <button type="button" id="viewPrimary" class="active">Primary path</button> <button type="button" id="viewMac">Mac — WHAT</button> <button type="button" id="viewLinux">Linux — HOW</button> <button type="button" id="viewSafety">Safety</button> <button type="button" id="viewAll">All</button> <input class="search" id="search" placeholder="Search node, role, runtime…" aria-label="Search architecture nodes"> <button type="button" id="zoomOut" aria-label="Zoom out">−</button> <button type="button" id="zoomReset">100%</button> <button type="button" id="zoomIn" aria-label="Zoom in">+</button> <button type="button" id="traceToggle">▶ Animate the architecture flow</button> </div> <div class="viewer"> <svg id="svg" viewBox="0 0 1800 1080" role="img" aria-label="Interactive Mac Linux embodied AI architecture"> <defs> <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"> <path d="M 0 0 L 10 5 L 0 10 z" fill="#98a2b3"></path> </marker> </defs> <g id="viewport"></g> </svg> <div class="legend">Click node → detail card · blue = upstream · amber = downstream · wheel/drag = zoom/pan</div> </div> <div class="footer-note">The animation follows a predefined example route through the architecture.</div> </main> <aside class="side" id="detail" aria-live="polite"> <h2>Architecture details</h2> <div class="sub">Select a block to see its role, inputs, outputs, and connections.</div> <div class="section"> <h3>Ownership boundary</h3> <p><b>Mac:</b> semantic WHAT + observation-correlated geometry.</p> <p><b>Linux:</b> physical HOW + execution truth.</p> <p><b>Isaac Sim:</b> simulated observation world / RGB-D / TF source.</p> </div> </aside> </div> <script>
+const nodes = [
+  {id:'user',label:'User Goal',sub:'High-level task intent',x:50,y:470,w:210,h:88,tag:'semantic input',group:'user'},
+  {id:'mac_client',label:'Mac Task Orchestration',sub:'Task sessions · capability checks',x:330,y:80,w:250,h:104,tag:'orchestration / transport',group:'mac'},
+  {id:'mac_perception',label:'Mac Perception',sub:'Visual grounding · segmentation · RGB-D geometry extraction',x:330,y:280,w:250,h:104,tag:'semantic + geometric evidence',group:'mac'},
+  {id:'mac_reasoning',label:'Semantic Reasoning',sub:'World state construction · task decomposition · semantic planning',x:330,y:480,w:250,h:104,tag:'WHAT reasoning',group:'mac'},
+  {id:'mac_exec',label:'Plan Validation & Executive',sub:'Canonicalization · validation · deterministic dispatch',x:330,y:680,w:250,h:104,tag:'deterministic task control',group:'mac'},
+  {id:'choice_a',label:'Semantic Grasp Contract',sub:'Cross-machine intent · observation reference · geometry evidence',x:330,y:880,w:250,h:104,tag:'hardware-independent contract',group:'mac'},
+  {id:'bridge',label:'Typed Bridge Transport',sub:'Capabilities · perception frames · intents · lifecycle feedback',x:735,y:470,w:270,h:112,tag:'bidirectional typed transport',group:'bridge'},
+  {id:'linux_ingest',label:'Linux Request Validation',sub:'Check requests and observation references',x:1160,y:100,w:270,h:112,tag:'request validation',group:'linux'},
+  {id:'linux_grounding',label:'Freshness & Spatial Grounding',sub:'Monotonic freshness · capture-time TF · frame grounding',x:1160,y:350,w:270,h:112,tag:'temporal + spatial grounding',group:'linux'},
+  {id:'linux_planner',label:'Embodiment & Native Planning',sub:'Hand-frame resolution · candidate generation · IK planning',x:1160,y:600,w:270,h:112,tag:'physical HOW',group:'linux'},
+  {id:'lifecycle',label:'Lifecycle & Safety',sub:'Execution state machine · verification · safety supervision',x:1160,y:850,w:270,h:112,tag:'execution truth',group:'linux'},
+  {id:'isaac',label:'Isaac Sim / ROS Source',sub:'RGB-D · camera info · clock · TF · simulated world state',x:735,y:820,w:270,h:112,tag:'simulation / observation world',group:'sim'}
+];
+const edges = [
+  {id:'goal',from:'user',to:'mac_client',label:'task goal',kind:'emphasis'},
+  {id:'cap',from:'bridge',to:'mac_client',label:'capability / lifecycle feedback',kind:'security'},
+  {id:'preq',from:'mac_client',to:'bridge',label:'perception request',kind:'emphasis'},
+  {id:'bc',from:'bridge',to:'isaac',label:'capture request',kind:'dashed'},
+  {id:'fb',from:'isaac',to:'bridge',label:'RGB-D + provenance',kind:'dashed'},
+  {id:'fm',from:'bridge',to:'mac_perception',label:'perception frame',kind:'emphasis'},
+  {id:'pr',from:'mac_perception',to:'mac_reasoning',label:'grounded evidence',kind:''},
+  {id:'re',from:'mac_reasoning',to:'mac_exec',label:'semantic plan',kind:''},
+  {id:'ec',from:'mac_exec',to:'choice_a',label:'validated dispatch',kind:''},
+  {id:'ib',from:'choice_a',to:'bridge',label:'command intent',kind:'emphasis'},
+  {id:'bi',from:'bridge',to:'linux_ingest',label:'typed intent + correlation',kind:'emphasis'},
+  {id:'ig',from:'linux_ingest',to:'linux_grounding',label:'validated execution request',kind:''},
+  {id:'ag',from:'isaac',to:'linux_grounding',label:'capture-time TF / timing',kind:'dashed'},
+  {id:'gp',from:'linux_grounding',to:'linux_planner',label:'grounded geometry',kind:''},
+  {id:'pl',from:'linux_planner',to:'lifecycle',label:'native execution plan',kind:'emphasis'},
+  {id:'lb',from:'lifecycle',to:'bridge',label:'execution feedback',kind:'security'}
+];
+
+const details = {
+  user:{role:'Defines a high-level task goal.',runtime:'Human / external caller',ownership:'Intent only; no geometry, arm, joint or trajectory authority.',responsibilities:['Provide semantic goal','Initiate a task request'],inputs:[],outputs:['High-level task goal'],status:'ROLE'},
+  mac_client:{role:'Controls one reasoning session and gates cross-machine communication.',runtime:'Mac bridge client / orchestration layer',ownership:'Mac transport/orchestration only.',responsibilities:['Connection lifecycle','Capability preflight','One-shot request orchestration','Associate evidence with the task'],inputs:['User goal','Capability advertisement','Lifecycle feedback'],outputs:['Perception request','Command intent'],status:'MAC'},
+  mac_perception:{role:'Produces semantic and geometric evidence from observations.',runtime:'Visual grounding, segmentation, and RGB-D geometry',ownership:'Mac owns observation-correlated semantic geometry, not physical hand embodiment.',responsibilities:['Object/part grounding','Segmentation','Depth backprojection','Geometric feature extraction','Quality assessment'],inputs:['RGB image','Depth image','Camera intrinsics','Semantic target'],outputs:['Grounded region','Geometry evidence','Observation provenance'],status:'MAC'},
+  mac_reasoning:{role:'Determines semantic WHAT should be done.',runtime:'Local task reasoning on Mac mini M4',ownership:'Skill/object/part/dependency reasoning only.',responsibilities:['Build world state','Task decomposition','Select semantic skill/object/part','Produce canonical semantic plan'],inputs:['World state','Grounded evidence','Skill catalog'],outputs:['Semantic TaskPlan'],status:'MAC'},
+  mac_exec:{role:'Validates the semantic plan and dispatches executable steps deterministically.',runtime:'Plan validation and task sequencing',ownership:'Deterministic task sequencing/correlation; no physical embodiment decisions.',responsibilities:['Canonical validation','Dependency checks','Step correlation','Single-step dispatch control'],inputs:['Semantic TaskPlan','Current observation context'],outputs:['Validated dispatch'],status:'MAC'},
+  choice_a:{role:'Carries a hardware-independent semantic grasp/execution contract across machines.',runtime:'Canonical typed intent artifact',ownership:'Transports semantic intent and geometry evidence while deferring physical embodiment to Linux.',responsibilities:['Preserve semantics','Preserve observation provenance','Carry geometry evidence','Declare ownership boundaries'],inputs:['Validated dispatch','Observation geometry'],outputs:['Typed command intent'],status:'CONTRACT'},
+  bridge:{role:'Provides typed bidirectional transport between Mac and Linux.',runtime:'Typed cross-machine messages',ownership:'Transport/correlation only; no semantic or physical reinterpretation.',responsibilities:['Capability exchange','Perception request/frame transport','Command intent transport','Lifecycle feedback transport'],inputs:['Mac requests/intents','Linux capability/frames/feedback'],outputs:['Typed bidirectional messages'],status:'BRIDGE'},
+  linux_ingest:{role:'Performs fail-closed message auditing and contract validation.',runtime:'Incoming request validation',ownership:'Linux validates transport, provenance and semantic contract before embodiment.',responsibilities:['Message checks','Schema validation','Provenance checks','Reference resolution','Correlation enforcement'],inputs:['Typed intent','Observation reference','Correlation metadata'],outputs:['Semantic execution request'],status:'LINUX'},
+  linux_grounding:{role:'Converts observation-relative evidence into temporally valid robot/world-frame geometry.',runtime:'Freshness gate + capture-time transform grounding',ownership:'Linux owns execution freshness and spatial grounding.',responsibilities:['Monotonic freshness check','Capture-time TF lookup','Frame transforms','Grounded geometry contract construction'],inputs:['Camera-frame geometry','Observation timing','TF'],outputs:['Robot/world-frame geometry'],status:'LINUX'},
+  linux_planner:{role:'Resolves physical embodiment and produces a feasible native motion/grasp plan.',runtime:'Hand-pose resolver + candidate generator + IK/planner',ownership:'Linux owns physical sign/chirality, hand/TCP frame, arm selection and IK.',responsibilities:['Physical closing resolution','Hand/TCP realization','Candidate generation','IK feasibility','Arm/candidate selection'],inputs:['Grounded geometry','Robot/hand model','Skill policy'],outputs:['Native execution plan'],status:'LINUX'},
+  lifecycle:{role:'Owns execution state transitions, verification and safety truth.',runtime:'Execution lifecycle + safety supervisor',ownership:'Linux is authoritative for runtime state and terminal status.',responsibilities:['Lifecycle progression','Safety gates','Verification phases','Terminal feedback','Execution checks'],inputs:['Native execution plan'],outputs:['Execution feedback','Terminal state'],status:'LINUX'},
+  isaac:{role:'Provides the simulated sensing and transform environment.',runtime:'Isaac Sim + ROS 2',ownership:'Simulation/observation source only.',responsibilities:['RGB-D publication','Camera calibration','ROS clock','TF publication','Simulated scene state'],inputs:['Simulation scene'],outputs:['RGB-D','Camera info','Clock','TF'],status:'SIM'}
+};
+
+const views = {
+  primary:new Set(nodes.map(n=>n.id).filter(id=>id!=='isaac').concat(['isaac'])),
+  mac:new Set(['mac_client','mac_perception','mac_reasoning','mac_exec','choice_a','bridge']),
+  linux:new Set(['bridge','linux_ingest','linux_grounding','linux_planner','lifecycle','isaac']),
+  safety:new Set(['bridge','linux_ingest','lifecycle','isaac']),
+  all:null
+};
+const primaryRoute=['user','mac_client','bridge','isaac','bridge','mac_perception','mac_reasoning','mac_exec','choice_a','bridge','linux_ingest','linux_grounding','linux_planner','lifecycle','bridge','mac_client'];
+
+const svg=document.getElementById('svg'), vp=document.getElementById('viewport'), detail=document.getElementById('detail');
+const NS='http://www.w3.org/2000/svg';
+const nmap=Object.fromEntries(nodes.map(n=>[n.id,n]));
+const state={selected:null,view:'primary',zoom:1,panX:0,panY:0,trace:false,traceTimer:null};
+
+function E(name,attrs={},text=''){const n=document.createElementNS(NS,name);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text)n.textContent=text;return n}
+function center(id){const n=nmap[id];return [n.x+n.w/2,n.y+n.h/2]}
+function path(a,b){const[x1,y1]=center(a),[x2,y2]=center(b);const mx=(x1+x2)/2;return `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`}
+function colors(group){if(group==='mac')return['#7c3aed','#f5f0ff'];if(group==='linux')return['#059669','#ecfdf5'];if(group==='bridge')return['#2563eb','#eff6ff'];if(group==='sim')return['#c2410c','#fff7ed'];return['#64748b','#f8fafc']}
+function wrap(text,maxChars=30,maxLines=3){
+  const words=text.split(/\s+/), lines=[]; let cur='';
+  for(const w of words){
+    const next=(cur?cur+' ':'')+w;
+    if(next.length>maxChars && cur){lines.push(cur);cur=w;if(lines.length===maxLines-1)break}
+    else cur=next;
+  }
+  if(lines.length<maxLines && cur)lines.push(cur);
+  if(lines.join(' ').length<text.length){lines[lines.length-1]=lines[lines.length-1].replace(/[.,;:]*$/,'')+'…'}
+  return lines.slice(0,maxLines);
+}
+function rectAround(ids,pad=28){const ns=ids.map(i=>nmap[i]);const x=Math.min(...ns.map(n=>n.x))-pad,y=Math.min(...ns.map(n=>n.y))-pad,x2=Math.max(...ns.map(n=>n.x+n.w))+pad,y2=Math.max(...ns.map(n=>n.y+n.h))+pad;return[x,y,x2-x,y2-y]}
+function boundary(ids,label,stroke){const[x,y,w,h]=rectAround(ids);const g=E('g',{'data-boundary':ids.join(',')});g.append(E('rect',{x,y,width:w,height:h,rx:22,class:'boundary',stroke}),E('text',{x:x+12,y:y+19,class:'small',fill:stroke},label));vp.append(g)}
+
+function render(){
+  vp.innerHTML='';
+  boundary(['mac_client','mac_perception','mac_reasoning','mac_exec','choice_a'],'Mac — Semantic WHAT / Observation Geometry','#7c3aed');
+  boundary(['linux_ingest','linux_grounding','linux_planner','lifecycle'],'Linux — Physical HOW / Execution State','#059669');
+  boundary(['isaac'],'Simulation / ROS World','#c2410c');
+
+  edges.forEach(e=>{
+    const g=E('g',{'data-edge':e.id,'data-from':e.from,'data-to':e.to});
+    g.append(E('path',{d:path(e.from,e.to),class:'edge '+(e.kind||'')}));
+    if(e.label){
+      const a=center(e.from),b=center(e.to);
+      g.append(E('text',{x:(a[0]+b[0])/2,y:(a[1]+b[1])/2-8,class:'edge-label','text-anchor':'middle'},e.label));
+    }
+    vp.append(g);
+  });
+
+  nodes.forEach(n=>{
+    const[stroke,fill]=colors(n.group);
+    const g=E('g',{class:'node','data-id':n.id,tabindex:'0',role:'button','aria-label':n.label});
+    g.append(E('rect',{x:n.x,y:n.y,width:n.w,height:n.h,fill,stroke}));
+    g.append(E('text',{x:n.x+n.w/2,y:n.y+28,class:'title','text-anchor':'middle'},n.label));
+
+    const lines=wrap(n.sub,34,3);
+    lines.forEach((line,i)=>g.append(E('text',{x:n.x+n.w/2,y:n.y+50+i*14,class:'small','text-anchor':'middle'},line)));
+
+    g.append(E('text',{x:n.x+n.w/2,y:n.y+n.h-10,class:'tag','text-anchor':'middle'},n.tag));
+    g.addEventListener('click',()=>selectNode(n.id));
+    g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();selectNode(n.id)}});
+    vp.append(g);
+  });
+
+  vp.append(E('circle',{id:'motionDot',r:8,cx:-20,cy:-20,class:'motion-dot',style:'display:none'}));
+  applyView();applyTransform();
+}
+
+function reach(start,dir){
+  const seen=new Set(),q=[start];
+  while(q.length){
+    const cur=q.shift();
+    edges.forEach(e=>{
+      const nx=dir==='up'?(e.to===cur?e.from:null):(e.from===cur?e.to:null);
+      if(nx&&!seen.has(nx)&&nx!==start){seen.add(nx);q.push(nx)}
+    });
+  }
+  return[...seen];
+}
+function selectNode(id){
+  state.selected=id;
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected','reach-up','reach-down'));
+  document.querySelector(`.node[data-id="${id}"]`)?.classList.add('selected');
+  const up=reach(id,'up'),down=reach(id,'down');
+  up.forEach(x=>document.querySelector(`.node[data-id="${x}"]`)?.classList.add('reach-up'));
+  down.forEach(x=>document.querySelector(`.node[data-id="${x}"]`)?.classList.add('reach-down'));
+  showDetail(id,up,down);
+}
+function showDetail(id,up,down){
+  const n=nmap[id],d=details[id];
+  const pills=a=>a.map(x=>`<span class="badge">${x}</span>`).join('');
+  detail.innerHTML=`<h2>${n.label}</h2><div class="sub">${n.sub}</div>
+  <span class="badge ok">${d.status}</span><span class="badge">${n.tag}</span>
+  <div class="section"><h3>Role</h3><p>${d.role}</p><p><b>Runtime:</b> ${d.runtime}</p><p><b>Ownership:</b> ${d.ownership}</p></div>
+  <div class="section"><h3>Responsibilities</h3><ul>${d.responsibilities.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+  <div class="section"><h3>I/O</h3><div><b>IN</b><br>${pills(d.inputs)}</div><div style="margin-top:8px"><b>OUT</b><br>${pills(d.outputs)}</div></div>
+  <div class="section"><h3>Connected components</h3><div class="reach"><button type="button" id="upBtn"><b>Upstream</b><br>${up.length} nodes</button><button type="button" id="downBtn"><b>Downstream</b><br>${down.length} nodes</button></div></div>`;
+  detail.querySelector('#upBtn')?.addEventListener('click',()=>focusSet([id,...up]));
+  detail.querySelector('#downBtn')?.addEventListener('click',()=>focusSet([id,...down]));
+}
+function focusSet(ids){const s=new Set(ids);document.querySelectorAll('.node').forEach(n=>n.classList.toggle('dim',!s.has(n.dataset.id)));document.querySelectorAll('[data-edge]').forEach(g=>g.classList.toggle('dim',!(s.has(g.dataset.from)&&s.has(g.dataset.to))))}
+function setView(v){state.view=v;document.querySelectorAll('.toolbar button[id^="view"]').forEach(b=>b.classList.remove('active'));document.getElementById('view'+v[0].toUpperCase()+v.slice(1))?.classList.add('active');applyView()}
+function applyView(){const s=views[state.view];document.querySelectorAll('.node').forEach(n=>n.classList.toggle('dim',s?!s.has(n.dataset.id):false));document.querySelectorAll('[data-edge]').forEach(g=>g.classList.toggle('dim',s?!(s.has(g.dataset.from)&&s.has(g.dataset.to)):false));document.querySelectorAll('[data-boundary]').forEach(g=>{const ids=g.dataset.boundary.split(',');g.classList.toggle('dim',s?!ids.some(x=>s.has(x)):false)})}
+function applyTransform(){vp.setAttribute('transform',`translate(${state.panX} ${state.panY}) scale(${state.zoom})`);document.getElementById('zoomReset').textContent=Math.round(state.zoom*100)+'%'}
+function zoom(f){const old=state.zoom;state.zoom=Math.max(.45,Math.min(2.4,state.zoom*f));const cx=900,cy=540;state.panX=cx-(cx-state.panX)*(state.zoom/old);state.panY=cy-(cy-state.panY)*(state.zoom/old);applyTransform()}
+function stopTrace(){state.trace=false;clearTimeout(state.traceTimer);state.traceTimer=null;document.getElementById('motionDot').style.display='none';document.querySelectorAll('.edge').forEach(e=>e.classList.remove('active-path'));document.getElementById('traceToggle').textContent='▶ Animate the architecture flow'}
+function startTrace(){
+  stopTrace();state.trace=true;document.getElementById('traceToggle').textContent='■ Stop animation';
+  const dot=document.getElementById('motionDot');dot.style.display='';
+  let i=0;
+  const tick=()=>{
+    if(!state.trace)return;
+    const a=primaryRoute[i%primaryRoute.length],b=primaryRoute[(i+1)%primaryRoute.length],d=path(a,b);
+    const tmp=E('path',{d});vp.append(tmp);const len=tmp.getTotalLength();tmp.remove();
+    document.querySelectorAll('.edge').forEach(e=>e.classList.remove('active-path'));
+    [...document.querySelectorAll('[data-edge]')].find(g=>g.dataset.from===a&&g.dataset.to===b)?.querySelector('.edge')?.classList.add('active-path');
+    const t0=performance.now(),dur=760;
+    const anim=t=>{
+      if(!state.trace)return;
+      const p=Math.min(1,(t-t0)/dur);
+      const q=E('path',{d});vp.append(q);const pt=q.getPointAtLength(len*p);q.remove();
+      dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);
+      if(p<1)requestAnimationFrame(anim);else{i++;state.traceTimer=setTimeout(tick,180)}
+    };
+    requestAnimationFrame(anim);
+  };
+  tick();
+}
+
+document.getElementById('viewPrimary').onclick=()=>setView('primary');
+document.getElementById('viewMac').onclick=()=>setView('mac');
+document.getElementById('viewLinux').onclick=()=>setView('linux');
+document.getElementById('viewSafety').onclick=()=>setView('safety');
+document.getElementById('viewAll').onclick=()=>setView('all');
+document.getElementById('zoomIn').onclick=()=>zoom(1.18);
+document.getElementById('zoomOut').onclick=()=>zoom(1/1.18);
+document.getElementById('zoomReset').onclick=()=>{state.zoom=1;state.panX=0;state.panY=0;applyTransform()};
+document.getElementById('traceToggle').onclick=()=>state.trace?stopTrace():startTrace();
+document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();if(!q){applyView();return}focusSet(nodes.filter(n=>JSON.stringify([n.label,n.sub,n.tag,details[n.id]]).toLowerCase().includes(q)).map(n=>n.id))});
+svg.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.08:1/1.08)},{passive:false});
+let drag=null;
+svg.addEventListener('pointerdown',e=>{if(e.target.closest('.node'))return;drag={x:e.clientX,y:e.clientY,px:state.panX,py:state.panY};svg.setPointerCapture(e.pointerId)});
+svg.addEventListener('pointermove',e=>{if(!drag)return;state.panX=drag.px+(e.clientX-drag.x)*1.5;state.panY=drag.py+(e.clientY-drag.y)*1.5;applyTransform()});
+svg.addEventListener('pointerup',()=>drag=null);
+
+render();selectNode('bridge');
+</script> </body> </html>
