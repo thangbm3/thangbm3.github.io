@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>System Overview Animation</title>
+<style>
+html{color-scheme:light}
+:root{--bg:#f4f3ef;--ink:#1d2622;--mut:#6b736d;--g:#5b7a5a;--gl:#e6ede1;--line:#c9d3c4;--mac:#8a7a5a;--lin:#4f6f86}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:0}
+.stage{position:relative;aspect-ratio:16/9;background:#fbfaf7;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:6%;opacity:0;transition:opacity .7s;pointer-events:none}
+.scene.on{opacity:1}
+.q{font-size:clamp(18px,3.4vw,36px);font-weight:700;letter-spacing:-.02em;text-align:center;opacity:0;transform:translateY(14px);transition:.7s;max-width:80%}
+.q.on{opacity:1;transform:none}
+.q+.q{margin-top:.6em}
+.q em{font-style:normal;color:var(--g)}
+.kicker{font:11px/1 ui-monospace,monospace;letter-spacing:.15em;color:var(--mut);text-transform:uppercase;margin-bottom:14px}
+.bubble{font-size:clamp(16px,2.6vw,26px);border:1px solid var(--line);background:#fff;border-radius:18px 18px 18px 4px;padding:16px 22px;min-height:1.6em}
+.caret{display:inline-block;width:2px;height:1em;background:var(--ink);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* architecture */
+.arch{position:absolute;inset:0;padding:5% 4% 4%}
+.machines{display:grid;grid-template-columns:1fr 1.9fr;gap:3%;height:72%}
+.mach{border:1.5px dashed var(--line);border-radius:12px;padding:10px;position:relative;transition:.5s}
+.mach .tag{font:10px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.mach.mac.lit{border-color:var(--mac);background:#f6f1e6}
+.mach.lin.lit{border-color:var(--lin);background:#eef3f6}
+.blocks{display:flex;gap:4%;height:calc(100% - 18px);margin-top:8px}
+.blk{flex:1;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;display:flex;flex-direction:column;opacity:.35;transition:.5s;overflow:hidden}
+.blk.on{opacity:1;border-color:var(--g);box-shadow:0 6px 18px #5b7a5a22}
+.blk h3{font-size:clamp(12px,1.7vw,17px);letter-spacing:-.01em}
+.blk .role{font-size:clamp(9px,1.1vw,12px);color:var(--g);font-weight:600;margin:2px 0 6px}
+.blk ul{list-style:none;padding:0;font-size:clamp(8px,1.05vw,11.5px);color:var(--mut);line-height:1.45}
+.blk li{opacity:0;transform:translateX(-6px);transition:.4s}
+.blk li.on{opacity:1;transform:none}
+.blk li::before{content:"› ";color:var(--g)}
+.io{margin-top:auto;font:clamp(7px,.95vw,10.5px)/1.4 ui-monospace,monospace;background:var(--gl);border-radius:6px;padding:6px;color:#2f4630;opacity:0;transition:.4s;white-space:pre-wrap}
+.io.on{opacity:1}
+.bridge{position:absolute;top:44%;left:calc(4% + (92% * 1/2.9) + .2%);width:2.6%;height:2px;background:var(--line)}
+.pkt{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--g);box-shadow:0 0 0 4px #5b7a5a33;opacity:0;transition:left .9s ease-in-out,top .9s ease-in-out,opacity .3s}
+.robot{height:24%;display:flex;align-items:center;justify-content:center;gap:16px;margin-top:2%}
+.robot svg{height:100%}
+.robot .lbl{font-size:clamp(10px,1.4vw,14px);color:var(--mut);opacity:.4;transition:.5s}
+.robot.on .lbl{opacity:1;color:var(--ink)}
+.arm{transform-box:fill-box;transition:transform 1.2s ease-in-out}
+.robot.on .armL{transform:rotate(-28deg)} .robot.on .armR{transform:rotate(28deg)}
+.cap{position:absolute;left:0;right:0;bottom:3%;text-align:center;font-size:clamp(10px,1.3vw,13px);color:var(--mut)}
+.contract{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;max-width:80%}
+.contract h2{font-size:clamp(20px,3.6vw,38px);letter-spacing:-.03em;line-height:1.1}
+.contract p{margin-top:14px;color:var(--mut);font-size:clamp(12px,1.6vw,16px);line-height:1.5}
+.ctrl{display:flex;gap:10px;align-items:center;margin-top:14px}
+button{font:600 13px Inter,system-ui,sans-serif;background:none;border:1px solid var(--g);color:var(--ink);padding:10px 18px;cursor:pointer}
+button:hover{background:var(--gl)}
+.bar{flex:1;height:2px;background:var(--line);position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--g);width:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.stage{aspect-ratio:auto;height:370px}
+.blk{overflow:visible}
+button:disabled{opacity:.55;cursor:default}
+@media(max-width:650px){
+  .stage{height:600px}
+  .arch{padding:12px}
+  .machines{display:grid;grid-template-columns:1fr;gap:8px;height:auto}
+  .mach{padding:8px}
+  .blocks{height:auto;flex-direction:column;gap:8px;margin-top:5px}
+  .blk{padding:8px}
+  .blk h3{font-size:14px}
+  .blk .role,.blk ul,.io{font-size:11px}
+  .blk .role{margin-bottom:3px}
+  .io{margin-top:4px;padding:3px 5px}
+  .robot{height:54px;margin-top:5px}
+  .cap{left:10px;right:10px;bottom:8px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="stage" id="stage">
+
+  <!-- Scene 0: questions -->
+  <section class="scene" data-s="0">
+    <p class="q">Does a robot know <em>what</em> it is doing?</p>
+    <p class="q">Can it understand an instruction written in <em>human language</em>?</p>
+    <p class="q">…and turn it into <em>motion in simulation</em>?</p>
+  </section>
+
+  <!-- Scene 1: instruction -->
+  <section class="scene" data-s="1">
+    <p class="kicker">A human says</p>
+    <div class="bubble"><span id="typed"></span><span class="caret"></span></div>
+  </section>
+
+  <!-- Scene 2: architecture -->
+  <section class="scene" data-s="2">
+    <div class="arch">
+      <div class="machines">
+        <div class="mach mac" id="mMac"><span class="tag">Mac mini M4 · task reasoning</span>
+          <div class="blocks">
+            <div class="blk" id="bR">
+              <h3>Reasoner</h3><p class="role">What should be done?</p>
+              <ul><li>Reads the instruction + scene image</li><li>Uses visually grounded scene evidence</li><li>Selects and orders manipulation skills</li><li>Proposes a semantic task plan</li></ul>
+              <div class="io">OUT · Semantic task plan</div>
+            </div>
+          </div>
+        </div>
+        <div class="mach lin" id="mLin"><span class="tag">Mac → Linux · Execution handoff</span>
+          <div class="blocks">
+            <div class="blk" id="bI">
+              <h3>Interpreter</h3><p class="role">What does execution need?</p>
+              <ul><li>Checks plan and object references</li><li>Packages scene evidence with task intent</li><li>Hands off an execution request to Linux</li></ul>
+              <div class="io">OUT · Typed execution request</div>
+            </div>
+            <div class="blk" id="bE">
+              <h3>Executor <span class="tag">· Linux</span></h3><p class="role">How do the arms move?</p>
+              <ul><li>Modified GRIT for hand grasp</li><li>C++ RMPflow motion execution</li><li>Motion objectives and execution constraints</li><li>RB-Y1 integration in MuJoCo</li></ul>
+              <div class="io">OUT · Simulated robot motion</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="robot" id="robot">
+        <svg viewBox="0 0 120 70" aria-hidden="true">
+          <rect x="50" y="18" width="20" height="32" rx="4" fill="#1d2622"/>
+          <circle cx="60" cy="10" r="7" fill="#1d2622"/>
+          <rect x="54" y="50" width="12" height="16" fill="#1d2622"/>
+          <g class="arm armL" style="transform-origin:right top"><rect x="22" y="20" width="28" height="6" rx="3" fill="#5b7a5a"/></g>
+          <g class="arm armR" style="transform-origin:left top"><rect x="70" y="20" width="28" height="6" rx="3" fill="#5b7a5a"/></g>
+        </svg>
+        <span class="lbl">RB-Y1 in MuJoCo · No fluid simulation</span>
+      </div>
+      <div class="pkt" id="pkt"></div>
+      <p class="cap" id="cap"></p>
+    </div>
+  </section>
+
+  <!-- Scene 3: closing -->
+  <section class="scene" data-s="3">
+    <div class="contract">
+      <p class="kicker">Design principle</p>
+      <h2>Meaning stays at the top.<br>Physics stays at the bottom.</h2>
+      <p>The layers are designed to exchange structured task intent and scene evidence. Their integration is ongoing.</p>
+    </div>
+  </section>
+
+</div>
+<div class="ctrl"><button id="play">Play animation</button><div class="bar" aria-hidden="true"><i id="prog"></i></div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const scenes=$$('.scene'),stage=$('#stage'),pkt=$('#pkt'),cap=$('#cap'),prog=$('#prog');
+const TOTAL=30000;let t0,running=false;
+function show(i){scenes.forEach((s,k)=>s.classList.toggle('on',k===i))}
+function reset(){$$('.on').forEach(e=>e.classList.remove('on'));$$('.lit').forEach(e=>e.classList.remove('lit'));$('#typed').textContent='';pkt.style.opacity=0;cap.textContent=''}
+function tick(){if(!running)return;prog.style.width=Math.min(100,(performance.now()-t0)/TOTAL*100)+'%';requestAnimationFrame(tick)}
+function moveTo(el){const a=stage.getBoundingClientRect(),b=el.getBoundingClientRect();pkt.style.left=(b.left-a.left+b.width/2-6)+'px';pkt.style.top=(b.top-a.top+b.height/2-6)+'px'}
+async function block(id,text){
+  const b=$('#'+id);moveTo(b);cap.textContent=text;await sleep(700);b.classList.add('on');
+  for(const li of b.querySelectorAll('li')){li.classList.add('on');await sleep(380)}
+  b.querySelector('.io').classList.add('on');await sleep(1500)}
+async function play(){
+  if(running)return;running=true;$('#play').disabled=true;reset();t0=performance.now();tick();
+  show(0);const qs=$$('.q');for(const q of qs){await sleep(300);q.classList.add('on');await sleep(1500)}
+  await sleep(800);
+  show(1);const msg='“Tilt the bottle toward the cup.”';
+  for(const c of msg){$('#typed').textContent+=c;await sleep(38)}await sleep(1300);
+  show(2);await sleep(600);
+  const r=$('#bR');pkt.style.transition='none';moveTo($('.bubble')||r);pkt.offsetHeight;pkt.style.transition='';pkt.style.opacity=1;
+  $('#mMac').classList.add('lit');await block('bR','The Reasoner proposes a task plan from the instruction and scene evidence.');
+  $('#mLin').classList.add('lit');cap.textContent='The task plan reaches the Interpreter…';
+  await block('bI','The Interpreter checks references and prepares the handoff to Linux.');
+  await block('bE','On Linux, the Executor integrates learned commands with model-based motion.');
+  moveTo($('#robot svg'));await sleep(700);$('#robot').classList.add('on');cap.textContent='Illustrative RB-Y1 action in MuJoCo.';await sleep(2600);
+  pkt.style.opacity=0;show(3);await sleep(3500);
+  running=false;prog.style.width='100%';$('#play').disabled=false;$('#play').textContent='Replay animation'}
+$('#play').onclick=play;
+show(0); $$('.q').forEach(q=>q.classList.add('on'));
+</script>
+</body>
+</html>

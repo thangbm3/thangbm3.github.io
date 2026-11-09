@@ -1,6 +1,3 @@
----
-import SystemOverviewAnimation from "../components/SystemOverviewAnimation.astro";
----
 <!doctype html>
 <html lang="en">
   <head>
@@ -10,7 +7,7 @@ import SystemOverviewAnimation from "../components/SystemOverviewAnimation.astro
     <meta name="description" content="Ongoing MuJoCo integration of GRIT manipulation policies in Python with C++ RMPflow for the dual-arm Rainbow RB-Y1." />
     <title>Embodied AI for Dual-Arm Manipulation | Minh Thang Bui</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-    <link rel="stylesheet" href="../styles.css?v=reasoner-flow-2" />
+    <link rel="stylesheet" href="../styles.css?v=overview-film-1" />
   </head>
   <body>
     <a class="skip-link" href="#content">Skip to content</a>
@@ -42,7 +39,10 @@ import SystemOverviewAnimation from "../components/SystemOverviewAnimation.astro
           </div>
           <div class="about-right">
             <p>The architecture is designed to turn a high-level human instruction into a task plan, validate it, and pass it to a motion executor. I’m integrating these stages and testing the RB-Y1 execution layer in MuJoCo.</p>
-            <SystemOverviewAnimation />
+            <figure class="system-overview-film">
+              <iframe src="../animations/system-overview.html" title="Animated walkthrough from human instructions to simulated robot action" loading="lazy"></iframe>
+              <figcaption>Illustrative system flow · MuJoCo integration in progress · No fluid simulation</figcaption>
+            </figure>
           </div>
         </div>
       </section>
