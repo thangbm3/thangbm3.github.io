@@ -43,20 +43,6 @@
         </div>
       </section>
 
-      <section class="dark-section section-pad-tight" aria-labelledby="simulation-demo-title">
-        <div class="container">
-          <span class="mono accent eyebrow">RB-Y1 / SIMULATION DEMO</span>
-          <h2 id="simulation-demo-title">Coordinating the bottle and cup</h2>
-          <figure class="project-demo">
-            <video controls playsinline preload="none" width="960" height="458" poster="../media/rb-y1-mujoco-poster.jpg" aria-describedby="simulation-caption">
-              <source src="../media/rb-y1-mujoco-sequence-2x.mp4" type="video/mp4" />
-              <a href="../media/rb-y1-mujoco-sequence-2x.mp4">Download the simulation clip</a>
-            </video>
-            <figcaption id="simulation-caption" class="demo-footnote">Work in progress in MuJoCo, shown at 2× speed. The simulated RB-Y1 reaches for the cup and bottle, grasps and lifts both, then tilts the bottle toward the cup. No fluid is simulated.</figcaption>
-          </figure>
-        </div>
-      </section>
-
       <section class="light-section section-pad" aria-labelledby="reasoner-title">
         <div class="container about-grid">
           <div class="about-left">
@@ -106,10 +92,64 @@
         </div>
       </section>
 
+      <section class="light-section section-pad" aria-labelledby="interpreter-title">
+        <div class="container about-grid">
+          <div class="about-left">
+            <span class="mono chapter-tag">03 / INTERPRETER</span>
+            <h2 id="interpreter-title">From task plan to execution request</h2>
+          </div>
+          <div class="about-right">
+            <p>The Interpreter is the handoff between task reasoning and motion planning. Its role is to check the plan and its object references, then package the task intent and relevant scene evidence into a request for Linux. This handoff is part of the ongoing integration.</p>
+            <figure class="reasoner-flow">
+              <svg viewBox="0 0 440 188" role="img" aria-labelledby="interpreter-flow-title interpreter-flow-desc">
+                <title id="interpreter-flow-title">Interpreter handoff</title>
+                <desc id="interpreter-flow-desc">A semantic task plan goes through plan and object-reference checks before being sent as a typed execution request to Linux.</desc>
+                <g aria-hidden="true">
+                  <path class="flow-connector" d="M32 52v16 M32 116v16" />
+                  <path class="flow-arrow" d="m28 59 4 4 4-4 m-8 64 4 4 4-4" />
+                </g>
+                <g class="flow-step">
+                  <rect x="12" y="4" width="416" height="48" rx="8" />
+                  <text x="32" y="28" class="flow-number">1</text>
+                  <text x="57" y="28">Semantic task plan</text>
+                </g>
+                <g class="flow-step">
+                  <rect x="12" y="68" width="416" height="48" rx="8" />
+                  <text x="32" y="92" class="flow-number">2</text>
+                  <text x="57" y="92">Check plan and object references</text>
+                </g>
+                <g class="flow-step">
+                  <rect x="12" y="132" width="416" height="48" rx="8" />
+                  <text x="32" y="156" class="flow-number">3</text>
+                  <text x="57" y="156">Typed execution request for Linux</text>
+                </g>
+              </svg>
+              <figcaption>Illustrative Interpreter handoff · Integration in progress</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="dark-section section-pad-tight" aria-labelledby="executor-title">
+        <div class="container">
+          <span class="mono accent eyebrow">04 / EXECUTOR</span>
+          <h2 id="executor-title">Modified GRIT and C++ RMPflow</h2>
+          <p class="project-intro">I’m integrating a modified GRIT manipulation policy in Python with a C++ RMPflow motion executor for the dual-arm RB-Y1 in MuJoCo. GRIT provides learned manipulation commands. RMPflow combines motion objectives during execution. I’m testing how the two work together during coordinated grasping and contact.</p>
+          <h3>Coordinating the bottle and cup</h3>
+          <figure class="project-demo">
+            <video controls playsinline preload="none" width="960" height="458" poster="../media/rb-y1-mujoco-poster.jpg" aria-describedby="simulation-caption">
+              <source src="../media/rb-y1-mujoco-sequence-2x.mp4" type="video/mp4" />
+              <a href="../media/rb-y1-mujoco-sequence-2x.mp4">Download the simulation clip</a>
+            </video>
+            <figcaption id="simulation-caption" class="demo-footnote">Work in progress in MuJoCo, shown at 2× speed. The simulated RB-Y1 reaches for the cup and bottle, grasps and lifts both, then tilts the bottle toward the cup. No fluid is simulated.</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section class="light-section section-pad-tight" aria-labelledby="ur10-title">
         <div class="container">
           <div class="next-card">
-            <span class="mono chapter-tag">03 / PUBLISHED HARDWARE RESEARCH</span>
+            <span class="mono chapter-tag">05 / PUBLISHED HARDWARE RESEARCH</span>
             <div class="next-card-body">
               <h2 id="ur10-title">Related work on the UR10</h2>
               <div>
