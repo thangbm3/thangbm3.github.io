@@ -401,3 +401,30 @@ img, svg { max-width:100%; display:block; }
   .film-frame video { display:none; }
   .film-frame { background:url('./media/ur10-poster.webp') center/cover; }
 }
+
+.project-title {
+  max-width: 16ch;
+  margin: .35em 0;
+  font-size: clamp(2.7rem, 7vw, 6rem);
+  line-height: 1.04;
+  letter-spacing: -.065em;
+}
+
+.project-intro {
+  max-width: 64ch;
+  margin-bottom: 0;
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.65;
+}
+
+.project-demo {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.project-demo video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--dark);
+}
