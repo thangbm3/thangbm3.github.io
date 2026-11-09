@@ -7,7 +7,7 @@
     <meta name="description" content="Ongoing MuJoCo integration of GRIT manipulation policies in Python with C++ RMPflow for the dual-arm Rainbow RB-Y1." />
     <title>Embodied AI for Dual-Arm Manipulation | Minh Thang Bui</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-    <link rel="stylesheet" href="../styles.css?v=reasoner-flow-1" />
+    <link rel="stylesheet" href="../styles.css?v=reasoner-flow-2" />
   </head>
   <body>
     <a class="skip-link" href="#content">Skip to content</a>
@@ -70,7 +70,13 @@
               <svg viewBox="0 0 440 252" role="img" aria-labelledby="flow-title flow-desc">
                 <title id="flow-title">From RGB-D scene evidence to Linux motion planning</title>
                 <desc id="flow-desc">Four steps in order: RGB-D scene evidence, task reasoning on Mac mini M4, plan validation, and motion planning on Linux.</desc>
-                <path class="flow-connector" d="M32 28V222" />
+                <g class="flow-transfer" aria-hidden="true">
+                  <path class="flow-connector" d="M32 52v16 M32 116v16 M32 180v16" />
+                  <path class="flow-arrow" style="--arrow-delay: 2s" d="m28 59 4 4 4-4" />
+                  <path class="flow-arrow" style="--arrow-delay: 4.5s" d="m28 123 4 4 4-4" />
+                  <path class="flow-arrow" style="--arrow-delay: 7s" d="m28 187 4 4 4-4" />
+                  <text x="57" y="192" class="flow-handoff">Mac → Linux</text>
+                </g>
                 <g class="flow-step" style="--flow-delay: 0s">
                   <rect x="12" y="4" width="416" height="48" rx="8" />
                   <text x="32" y="28" class="flow-number">1</text>

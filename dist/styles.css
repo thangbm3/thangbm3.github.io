@@ -447,7 +447,9 @@ img, svg { max-width:100%; display:block; }
 }
 
 .reasoner-flow button[hidden] { display: none; }
-.flow-connector { stroke: #537e47; stroke-width: 2; }
+.flow-connector { stroke: #a1b394; stroke-width: 1.5; }
+.flow-arrow { fill: none; stroke: #537e47; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.flow-handoff { fill: #52615c; font-size: 11px; }
 .flow-step rect { fill: #f5f7ef; stroke: #b5c2ab; }
 .flow-step text { fill: #243a30; font-size: 17px; dominant-baseline: middle; }
 .flow-step .flow-number { text-anchor: middle; font-weight: 700; }
@@ -456,6 +458,18 @@ img, svg { max-width:100%; display:block; }
   .reasoner-flow.is-playing .flow-step rect {
     animation: highlight-flow-step 2.5s var(--flow-delay) both;
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reasoner-flow.is-playing .flow-arrow {
+    animation: move-flow-arrow .5s var(--arrow-delay);
+  }
+}
+
+@keyframes move-flow-arrow {
+  from { transform: translateY(-5px); stroke: #236347; opacity: .45; }
+  50% { opacity: 1; stroke-width: 3.5; }
+  to { transform: translateY(4px); stroke: #236347; }
 }
 
 @keyframes highlight-flow-step {
