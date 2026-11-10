@@ -489,3 +489,10 @@ img, svg { max-width:100%; display:block; }
 @container (max-width: 650px) {
   .system-overview-film iframe { height: 654px; }
 }
+
+.trajectory-plot video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 10px 0 8px;
+}

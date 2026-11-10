@@ -17,7 +17,7 @@
     <title>Minh Thang Bui — Robotics Researcher</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preload" href="./media/ur10-poster.webp" as="image" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=rmpflow-explainer-1" />
+    <link rel="stylesheet" href="./styles.css?v=ee-trajectory-1" />
     <script is:inline src="./main.js" defer></script>
   </head>
   <body>
@@ -131,8 +131,11 @@
             </div>
             <figure class="plot-card trajectory-plot reveal">
               <div class="plot-label mono"><span>FIG. 04 / RA-L 2026</span><span>3D TASK SPACE</span></div>
-              <img src="./figures/trajectory.webp" loading="eager" decoding="async" alt="3D chart: blue end-effector trajectory curves from Start at the right to Goal at the left while two dotted obstacle trajectories cross its path." width="1814" height="1210" />
-              <figcaption>End-effector trajectory under successive dynamic obstacle encounters. Figure supplied by the author.</figcaption>
+              <video controls playsinline preload="none" width="1200" height="928" poster="./media/ee-trajectory-poster.jpg" aria-describedby="trajectory-caption">
+                <source src="./media/ee-trajectory-animation.mp4" type="video/mp4" />
+                <a href="./media/ee-trajectory-animation.mp4">Open the trajectory animation</a>
+              </video>
+              <figcaption id="trajectory-caption">Animated 3D plot of the end-effector path from start to goal during successive encounters with two moving obstacles.</figcaption>
             </figure>
           </div>
         </div>
